@@ -206,7 +206,7 @@ class SSA_Graph(object):
             for var in block.unaryConstraints:
                 v2b[var] = block
             for phi in block.phis:
-                assigns[phi.rval] = map(phi.get, block.predecessors)
+                assigns[phi.rval] = list(map(phi.get, block.predecessors))
 
         UCs = {}
         sccs = graph_util.tarjanSCC(assigns, lambda v:assigns.get(v, []))
@@ -239,7 +239,7 @@ class SSA_Graph(object):
             for block in self.blocks:
                 assert block in self.blocks
                 UCs = block.unaryConstraints
-                assert None not in UCs.values()
+                assert None not in list(UCs.values())
                 dirty = visit_counts[block] == 0
                 for phi in block.phis:
                     if phi in dirty_phis:
@@ -597,7 +597,7 @@ class SSA_Graph(object):
         for block in self.blocks[:]:
             if block is self.entryBlock:
                 continue
-            types = set(zip(*block.predecessors)[1])
+            types = set(tuple(zip(*block.predecessors))[1])
             if len(types) <= 1:
                 continue
             assert not isinstance(block.jump, (ssa_jumps.Return, ssa_jumps.Rethrow))
@@ -667,7 +667,7 @@ class SSA_Graph(object):
                     assert head not in reachable
                     print('Duplicating {} nodes'.format(len(reachable)))
                     blockd = self._duplicateBlocks(reachable, set(scc) - set(reachable))
-                    newtodo += map(blockd.get, reachable)
+                    newtodo += list(map(blockd.get, reachable))
                 newtodo.extend(scc)
                 newtodo.remove(head)
             todo = newtodo
